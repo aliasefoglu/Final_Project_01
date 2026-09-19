@@ -1,0 +1,40 @@
+from typing import Optional
+from dotenv import load_dotenv
+from pydantic_settings import BaseSettings, SettingsConfigDict
+load_dotenv()
+class Settings(BaseSettings):
+    ## LLM Settings
+    llm_provider: str = "anthropic"
+    llm_model: str = "claude-sonnet-4-6"
+
+    anthropic_api_key: Optional[str] = None
+    openai_api_key: Optional[str] = None
+    google_api_key: Optional[str] = None
+
+    ## Embedding Settings
+    embedding_provider: str = "openai"
+    embedding_model: str = "text-embedding-3-small"
+    ai_dry_run: bool = False
+    max_articles_per_run: Optional[int] = None
+
+    ## Application Settings
+    log_level: str = "INFO"
+    database_url: str = "postgresql+asyncpg://postgres:dev@localhost:5432/newsbrief"
+    digests_dir: str = "./digests"
+
+    ## Fetch and deduplication settings
+    dedup_near_duplicate_threshold: float = 0.70
+    fetch_timeout_seconds: int = 15
+    max_parallel_fetches: int = 8
+
+    ## HTML-scrape source (satisfies "at least one direct-scraped HTML source")
+    html_scrape_url: str = "https://www.bbc.com/news/world"
+    html_scrape_source_name: str = "BBC World (scraped)"
+
+    ## Web UI session signing key. MUST be overridden via env in any real deployment.
+    session_secret_key: str = "change-me-in-production"
+
+    model_config = SettingsConfigDict(
+        env_file=".env", env_file_encoding="utf-8", extra="ignore"
+    )
+settings = Settings()
