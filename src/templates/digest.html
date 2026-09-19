@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Latest digest — NewsBrief{% endblock %}
+{% block content_class %}content-wide{% endblock %}
+{% block content %}
+<div class="card digest-card">
+  <h1>Today's digest for {{ user_id }}</h1>
+  {% if content_html %}
+    <div class="digest-rendered">{{ content_html | safe }}</div>
+  {% else %}
+    <p class="muted">No digest has been generated for today yet. Run:</p>
+    <pre class="digest-preview">python -m src.cli run-daily --user {{ user_id }}</pre>
+  {% endif %}
+</div>
+{% endblock %}

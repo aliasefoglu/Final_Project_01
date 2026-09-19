@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}NewsBrief{% endblock %}</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/">NewsBrief</a>
+    <nav>
+      {% if request.session.get('user_id') %}
+        <a href="/preferences">Preferences</a>
+        <a href="/digest">Latest digest</a>
+        <form action="/logout" method="post" class="inline-form">
+          <button type="submit" class="link-button">Log out</button>
+        </form>
+      {% else %}
+        <a href="/login">Log in</a>
+        <a href="/signup">Sign up</a>
+      {% endif %}
+    </nav>
+  </header>
+  <main class="content {% block content_class %}{% endblock %}">
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="footer">AI-ENG-110 &middot; Topic 3: AI News Briefing Service</footer>
+</body>
+</html>
