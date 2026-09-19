@@ -1,0 +1,63 @@
+# Brings up the whole system with one command:
+#   docker compose up --build
+#
+# This starts three things:
+#   db  -- PostgreSQL 16
+#   app -- the scheduler (runs the pipeline daily; see NEWSBRIEF_SCHEDULE_HOUR)
+#   web -- the FastAPI UI (signup / login / preferences / digest viewer) on :8000
+#
+# For a one-off pipeline run instead of waiting for the scheduler:
+#   docker compose run --rm app python -m src.cli run-daily --user khagani
+#
+# Note: DATABASE_URL is overridden below to point at the "db" service by
+# its Docker-network hostname, not "localhost" -- your local .env (used
+# when running the app directly on your machine, outside Docker) still
+# says "localhost", which is correct for that case. Both are right for
+# their own context.
+
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_PASSWORD: dev
+      POSTGRES_DB: newsbrief
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:dev@db:5432/newsbrief
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./digests:/app/digests
+    command: ["python", "-m", "src.scheduler"]
+    restart: unless-stopped
+
+  web:
+    build: .
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:dev@db:5432/newsbrief
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./digests:/app/digests
+    command: ["uvicorn", "src.api:app", "--host", "0.0.0.0", "--port", "8000"]
+    restart: unless-stopped
+
+volumes:
+  pgdata:

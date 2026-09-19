@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Preferences — NewsBrief{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Your interests</h1>
+  <p class="muted">Pick the topics you want in your daily digest. Leave all unchecked to receive everything.</p>
+  {% if saved %}<p class="success">Preferences saved.</p>{% endif %}
+
+  <form method="post" action="/preferences">
+    <fieldset class="topic-grid">
+      <legend>Preferred topics</legend>
+      {% for topic in all_topics %}
+        <label class="topic-checkbox">
+          <input type="checkbox" name="topics" value="{{ topic.value }}"
+                 {% if topic in user.preferred_topics %}checked{% endif %} />
+          {{ topic.value }}
+        </label>
+      {% endfor %}
+    </fieldset>
+
+    <label for="excluded_sources">Excluded sources (comma-separated)</label>
+    <input id="excluded_sources" name="excluded_sources" type="text"
+           value="{{ user.excluded_sources | join(', ') }}" placeholder="e.g. sponsored.example.com" />
+
+    <label for="preferred_length">Preferred summary length</label>
+    <select id="preferred_length" name="preferred_length">
+      {% for length in ['short', 'medium', 'long'] %}
+        <option value="{{ length }}" {% if user.preferred_length == length %}selected{% endif %}>
+          {{ length | capitalize }}
+        </option>
+      {% endfor %}
+    </select>
+
+    <button type="submit" class="btn-primary">Save preferences</button>
+  </form>
+</div>
+{% endblock %}
